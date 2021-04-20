@@ -6,7 +6,7 @@
 #include <conio.h>
 
 using namespace std;
-
+int speed;
 int pxSize;
 char keyPress;
 
@@ -35,7 +35,7 @@ public:
 	{
 		double dist;
 		dist = sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1)));
-		if (dist<pxSize+1)
+		if (dist<pxSize)
 			return 1;
 		else
 			return 0;
@@ -45,8 +45,11 @@ public:
 	{
 		Clear(olc::VERY_DARK_GREY);
 		FillRect(posX, posY, pxSize, pxSize, olc::Pixel(0, 255, 0));
-		posFoodX = rand() % ScreenWidth();
-		posFoodY = rand() % ScreenHeight();
+		int tempX, tempY;
+		tempX = rand() % ScreenWidth();
+		tempY = rand() % ScreenHeight();
+		posFoodX = (tempX - (tempX%pxSize)) % ScreenWidth();
+		posFoodY = (tempY - (tempY%pxSize)) % ScreenHeight();
 		FillRect(posFoodX, posFoodY, pxSize, pxSize, olc::Pixel(255, 255, 255));
 	
 		
@@ -56,17 +59,12 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-		Sleep(100);
+		Sleep(speed);
+		
+		//cout << ScreenWidth() << " "<<posX << " | " << ScreenHeight() << " " << posY << endl;
 
-	
-		if (posX == ScreenWidth() || posX == -1) {
-			posX = 0;
-		}
+		
 
-		if (posY == ScreenHeight() || posY == -1) {
-			posY = 0;
-		}
-	
 		if (snekBody.begin() != snekBody.end())
 		{
 			for (int i = 0; i < snekBody.size() - 1; i++)
@@ -80,13 +78,15 @@ public:
 
 		if (dist(posX,posY,posFoodX,posFoodY))
 		{
-			posFoodX = rand() % ScreenWidth();
-			posFoodY = rand() % ScreenHeight();
+			int tempX, tempY;
+			tempX = rand() % ScreenWidth();
+			tempY = rand() % ScreenHeight();
+			posFoodX = (tempX - (tempX % pxSize)) % ScreenWidth();
+			posFoodY = (tempY - (tempY % pxSize)) % ScreenHeight();
 			snekLen = snekLen + 1;
 			vector<int> temp = { posX,posY }; // increases size by adding a temp vector into the main snek body
 			snekBody.push_back(temp);
 		}
-		//cout << dist(posX, posY, posFoodX, posFoodY) << endl;
 		if (_kbhit())
 			keyPress = _getch();
 		switch (keyPress)
@@ -95,7 +95,7 @@ public:
 			case 'w':
 			{
 				if (dirY == pxSize)
-					return true;
+					break;
 				dirY = pxSize * -1;
 				dirX = 0;
 				break;
@@ -104,7 +104,7 @@ public:
 			case 'a':
 			{
 				if (dirX == pxSize)
-					return true;
+					break;
 				dirX = pxSize * -1;
 				dirY = 0;
 				break;
@@ -113,7 +113,7 @@ public:
 			case 's':
 			{
 				if (dirY == (pxSize * -1))
-					return true;
+					break;
 				dirY = pxSize;
 				dirX = 0;
 				break;
@@ -122,7 +122,7 @@ public:
 			case 'd':
 			{
 				if (dirX == (pxSize*-1))
-					return true;
+					break;
 				dirX = pxSize;
 				dirY = 0;
 				break;
@@ -132,10 +132,16 @@ public:
 	
 		snekPositionUpdater(dirX, dirY);
 
+			if (posX >= ScreenWidth())
+				posX = 0;
+			if (posX < 0)
+				posX = ScreenWidth();
+			if (posY >= ScreenHeight())
+				posY = 0;
+			if (posY < 0)
+				posY = ScreenHeight();
 
-		for (int i = 0; i < ScreenWidth(); i++)
-			for (int j = 0; j < ScreenHeight(); j++)
-				Draw(i, j, olc::Pixel(0, 0, 0));
+			Clear(olc::BLACK);
 
 
 		for (int i = 0; i < snekBody.size(); i++)
@@ -160,11 +166,15 @@ public:
 
 int main()
 {
-	cout << "Warning: Values too high may break the game\nInsert difficulty of the game: (1 being hardest and 5 recommended)\n";
+	cout << "Warning: Values too high may break the game\nInsert difficulty of the game: (The higher the harder)\n";
 	cin >> pxSize;
+	cout << "\nWhat about the speed of the game? (The higher the harder) \n";
+	cin >> speed;
+	speed = 500 / speed;
 	srand(time(NULL));
 	snek game;
 	if (game.Construct(200, 200, 3, 3,false,true))
 		game.Start();
+	cout <<"\n\nHighschore:" << game.snekLen << "\n\n";
 	return 0;
 }
