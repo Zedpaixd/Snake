@@ -9,13 +9,14 @@ using namespace std;
 int speed;
 int pxSize;
 char keyPress;
+bool paused = 0;
 
 class snek : public olc::PixelGameEngine
 {
 public:
 	snek()
 	{
-		sAppName = "Snek";
+		sAppName = "Snek - ESC = Pause | SPACE = Resume";
 	}
 
 
@@ -59,78 +60,111 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-		Sleep(speed);
 		
-		//cout << ScreenWidth() << " "<<posX << " | " << ScreenHeight() << " " << posY << endl;
-
-		
-
-		if (snekBody.begin() != snekBody.end())
+		if (GetKey(olc::Key::ESCAPE).bHeld)
 		{
-			for (int i = 0; i < snekBody.size() - 1; i++)
+			paused = 1;
+		}
+
+		if (paused == 0)
+		{
+
+			//cout << ScreenWidth() << " "<<posX << " | " << ScreenHeight() << " " << posY << endl;
+
+
+
+			if (snekBody.begin() != snekBody.end())
 			{
-				if (snekBody[i][0] == posX && snekBody[i][1] == posY)
-					return true;
-				snekBody[i] = snekBody[i + 1];
+				for (int i = 0; i < snekBody.size() - 1; i++)
+				{
+					if (snekBody[i][0] == posX && snekBody[i][1] == posY)
+						return true;
+					snekBody[i] = snekBody[i + 1];
+				}
+				snekBody[snekLen - 1] = { posX,posY };
 			}
-			snekBody[snekLen - 1] = { posX,posY };
-		}
 
-		if (dist(posX,posY,posFoodX,posFoodY))
-		{
-			int tempX, tempY;
-			tempX = rand() % ScreenWidth();
-			tempY = rand() % ScreenHeight();
-			posFoodX = (tempX - (tempX % pxSize)) % ScreenWidth();
-			posFoodY = (tempY - (tempY % pxSize)) % ScreenHeight();
-			snekLen = snekLen + 1;
-			vector<int> temp = { posX,posY }; // increases size by adding a temp vector into the main snek body
-			snekBody.push_back(temp);
-		}
-		if (_kbhit())
-			keyPress = _getch();
-		switch (keyPress)
-		{
-
-			case 'w':
+			if (dist(posX, posY, posFoodX, posFoodY))
 			{
-				if (dirY == pxSize)
-					break;
+				int tempX, tempY;
+				tempX = rand() % ScreenWidth();
+				tempY = rand() % ScreenHeight();
+				posFoodX = (tempX - (tempX % pxSize)) % ScreenWidth();
+				posFoodY = (tempY - (tempY % pxSize)) % ScreenHeight();
+				snekLen = snekLen + 1;
+				vector<int> temp = { posX,posY }; // increases size by adding a temp vector into the main snek body
+				snekBody.push_back(temp);
+			}
+
+			if (GetKey(olc::Key::W).bHeld && !(dirY == pxSize))
+			{
 				dirY = pxSize * -1;
 				dirX = 0;
-				break;
 			}
 
-			case 'a':
+			if (GetKey(olc::Key::A).bHeld && !(dirX == pxSize))
 			{
-				if (dirX == pxSize)
-					break;
 				dirX = pxSize * -1;
 				dirY = 0;
-				break;
 			}
 
-			case 's':
+			if (GetKey(olc::Key::S).bHeld && !(dirY == (pxSize * -1)))
 			{
-				if (dirY == (pxSize * -1))
-					break;
 				dirY = pxSize;
 				dirX = 0;
-				break;
 			}
 
-			case 'd':
+			if (GetKey(olc::Key::D).bHeld && !(dirX == (pxSize * -1)))
 			{
-				if (dirX == (pxSize*-1))
-					break;
 				dirX = pxSize;
 				dirY = 0;
-				break;
 			}
-		}
 
-	
-		snekPositionUpdater(dirX, dirY);
+
+			/*if (_kbhit())
+				keyPress = _getch();
+			switch (keyPress)
+			{
+
+				case 'w':
+				{
+					if (dirY == pxSize)
+						break;
+					dirY = pxSize * -1;
+					dirX = 0;
+					break;
+				}
+
+				case 'a':
+				{
+					if (dirX == pxSize)
+						break;
+					dirX = pxSize * -1;
+					dirY = 0;
+					break;
+				}
+
+				case 's':
+				{
+					if (dirY == (pxSize * -1))
+						break;
+					dirY = pxSize;
+					dirX = 0;
+					break;
+				}
+
+				case 'd':
+				{
+					if (dirX == (pxSize*-1))
+						break;
+					dirX = pxSize;
+					dirY = 0;
+					break;
+				}
+			}
+			*/
+
+			snekPositionUpdater(dirX, dirY);
 
 			if (posX >= ScreenWidth())
 				posX = 0;
@@ -144,24 +178,32 @@ public:
 			Clear(olc::BLACK);
 
 
-		for (int i = 0; i < snekBody.size(); i++)
-		{
-			if (snekBody[i][0] == posX && snekBody[i][1] == posY) {
-				while (!GetKey(olc::Key::SPACE).bHeld) {
-					return true;
-				}
+			for (int i = 0; i < snekBody.size(); i++)
+			{
+				/*if (snekBody[i][0] == posX && snekBody[i][1] == posY) {
+					while (!GetKey(olc::Key::SPACE).bHeld) {
+						return true;
+					}
+				}*/
+				FillRect(snekBody[i][0], snekBody[i][1], pxSize, pxSize, olc::DARK_GREEN);
 			}
-			FillRect(snekBody[i][0], snekBody[i][1], pxSize , pxSize , olc::DARK_GREEN);
+
+
+			FillRect(posX, posY, pxSize, pxSize, olc::GREEN);
+			FillRect(posFoodX, posFoodY, pxSize, pxSize, olc::RED);
+			Sleep(speed);
+
+			return true;
+		}
+	else
+	{
+		if (GetKey(olc::Key::SPACE).bHeld)
+		{
+			paused = 0;
+		}
+		return true;
 	}
-
-
-		FillRect(posX, posY, pxSize, pxSize, olc::GREEN);
-		FillRect(posFoodX, posFoodY, pxSize, pxSize, olc::RED);
-
-
-	return true;
 	}
-	
 };
 
 int main()
@@ -172,8 +214,13 @@ int main()
 	cin >> speed;
 	speed = 500 / speed;
 	srand(time(NULL));
+	system("cls");
+	cout << "Controls:\n"
+		 << "W A S D - Movement\n"
+		 << "ESC - Pause\n"
+		 << "SPACE - Resume";
 	snek game;
-	if (game.Construct(200, 200, 3, 3,false,true))
+	if (game.Construct(200, 200, 3, 3,false,false))
 		game.Start();
 	cout <<"\n\nHighschore:" << game.snekLen << "\n\n";
 	return 0;
