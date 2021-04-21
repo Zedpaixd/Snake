@@ -10,6 +10,7 @@ int speed;
 int pxSize;
 char keyPress;
 bool paused = 0;
+bool movement = false;
 
 
 class snek : public olc::PixelGameEngine
@@ -63,6 +64,7 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
+		movement = false;
 		fAccumulatedTime += fElapsedTime;
 		if (fAccumulatedTime >= fTargetFrameTime)
 		{
@@ -107,28 +109,32 @@ public:
 				snekBody.push_back(temp);
 			}
 
-			if (GetKey(olc::Key::W).bHeld && !(dirY == pxSize))
+			if (GetKey(olc::Key::W).bHeld && !(dirY == pxSize) && !movement)
 			{
 				dirY = pxSize * -1;
 				dirX = 0;
+				movement = true;
 			}
 
-			if (GetKey(olc::Key::A).bHeld && !(dirX == pxSize))
+			if (GetKey(olc::Key::A).bHeld && !(dirX == pxSize) && !movement)
 			{
 				dirX = pxSize * -1;
 				dirY = 0;
+				movement = true;
 			}
 
-			if (GetKey(olc::Key::S).bHeld && !(dirY == (pxSize * -1)))
+			if (GetKey(olc::Key::S).bHeld && !(dirY == (pxSize * -1)) && !movement)
 			{
 				dirY = pxSize;
 				dirX = 0;
+				movement = true;
 			}
 
-			if (GetKey(olc::Key::D).bHeld && !(dirX == (pxSize * -1)))
+			if (GetKey(olc::Key::D).bHeld && !(dirX == (pxSize * -1)) && !movement)
 			{
 				dirX = pxSize;
 				dirY = 0;
+				movement = true;
 			}
 
 
