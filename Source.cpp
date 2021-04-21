@@ -11,8 +11,10 @@ int pxSize;
 char keyPress;
 bool paused = 0;
 
+
 class snek : public olc::PixelGameEngine
 {
+
 public:
 	snek()
 	{
@@ -21,7 +23,8 @@ public:
 
 
 public:
-
+	float fTargetFrameTime = 1.0f / (100.0f / speed);
+	float fAccumulatedTime = 0.0f;
 	int posX = 0, posY = 0, dirX = 0, dirY = 0, snekLen = 0, posFoodX, posFoodY;
 	vector<vector<int>> snekBody;
 	void snekPositionUpdater(int dirX, int dirY) 
@@ -60,6 +63,14 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
+		fAccumulatedTime += fElapsedTime;
+		if (fAccumulatedTime >= fTargetFrameTime)
+		{
+			fAccumulatedTime -= fTargetFrameTime;
+			fElapsedTime = fTargetFrameTime;
+		}
+		else
+			return true;
 		
 		if (GetKey(olc::Key::ESCAPE).bHeld)
 		{
@@ -191,7 +202,7 @@ public:
 
 			FillRect(posX, posY, pxSize, pxSize, olc::GREEN);
 			FillRect(posFoodX, posFoodY, pxSize, pxSize, olc::RED);
-			Sleep(speed);
+			//Sleep(speed);
 
 			return true;
 		}
