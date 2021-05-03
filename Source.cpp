@@ -173,6 +173,7 @@ public:
 
 			if (dist(posX, posY, posFoodX, posFoodY))
 			{
+				sAppName = (string)"Snake game | Highschore : " + to_string(snekLen+1);
 				int tempX, tempY;
 				tempX = rand() % ScreenWidth();
 				tempY = rand() % ScreenHeight();
@@ -271,18 +272,43 @@ int main()
 {
 	cout << "Warning: Values too high may break the game\nInsert difficulty of the game: (The higher the harder, suggested is 8)\n";
 	cin >> pxSize;
+
 	cout << "\nWhat about the speed of the game? (The higher the harder, suggested is 75) \n";
 	cin >> speed;
+
 	speed = 500 / speed;
-	srand(time(NULL));
 	system("cls");
+
+	
 	cout << "Controls:\n"
 		 << "W A S D - Movement\n"
 		 << "ESC - Pause\n"
-		 << "SPACE - Resume";
+		 << "SPACE - Resume\n\n\n";
+	
+	Sleep(3000);
+
+	cout << "Game Starting in: \n";
+
+	Sleep(1000);
+
+	cout << "3...\n";
+
+	Sleep(1000);
+
+	cout << "2..\n";
+
+	Sleep(1000);
+
+	cout << "1.\n";
+
+	Sleep(1000);
+	
 	snek game;
+
 	if (game.Construct(200, 200, 3, 3,false,false))
 		game.Start();
-	cout <<"\n\nHighschore:" << game.snekLen << "\n\n";
+
+	cout <<"\n\nHighschore:" << game.snekLen + 1<< "\n\n";
+
 	return 0;
 }
