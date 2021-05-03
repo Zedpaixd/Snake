@@ -11,7 +11,7 @@ int pxSize;
 char keyPress;
 bool paused = 0;
 bool movement = false;
-
+int tick = 0;
 
 class snek : public olc::PixelGameEngine
 {
@@ -46,6 +46,72 @@ public:
 			return 0;
 	}
 
+	void movementUpdater()
+	{
+		tick++;
+
+		if (GetKey(olc::Key::W).bHeld && !(dirY == pxSize) && !movement)
+		{
+			dirY = pxSize * -1;
+			dirX = 0;
+			movement = true;
+		}
+
+		if (GetKey(olc::Key::A).bHeld && !(dirX == pxSize) && !movement)
+		{
+			dirX = pxSize * -1;
+			dirY = 0;
+			movement = true;
+		}
+
+		if (GetKey(olc::Key::S).bHeld && !(dirY == (pxSize * -1)) && !movement)
+		{
+			dirY = pxSize;
+			dirX = 0;
+			movement = true;
+		}
+
+		if (GetKey(olc::Key::D).bHeld && !(dirX == (pxSize * -1)) && !movement)
+		{
+			dirX = pxSize;
+			dirY = 0;
+			movement = true;
+		}
+
+		if (tick == 2)
+		{
+			tick = 0;
+			movement = false;
+		}
+	}
+
+
+	void pauseChecker()
+	{
+		if (GetKey(olc::Key::ESCAPE).bHeld)
+				{
+					paused = 1;
+				}
+
+		if (GetKey(olc::Key::SPACE).bHeld && (paused == 1))
+		{
+			paused = 0;
+		}
+	}
+
+	void edgeHitCheck()
+	{
+		if (posX >= ScreenWidth())
+			posX = 0;
+		if (posX < 0)
+			posX = ScreenWidth();
+		if (posY >= ScreenHeight())
+			posY = 0;
+		if (posY < 0)
+			posY = ScreenHeight();
+	}
+
+
 	bool OnUserCreate() override
 	{
 		Clear(olc::VERY_DARK_GREY);
@@ -64,7 +130,13 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-		movement = false;
+
+		pauseChecker();
+		movementUpdater();
+		
+
+		// VVVVV --- Lower the virtual FPS --- VVVVV
+
 		fAccumulatedTime += fElapsedTime;
 		if (fAccumulatedTime >= fTargetFrameTime)
 		{
@@ -73,11 +145,10 @@ public:
 		}
 		else
 			return true;
+
 		
-		if (GetKey(olc::Key::ESCAPE).bHeld)
-		{
-			paused = 1;
-		}
+
+		
 
 		if (paused == 0)
 		{
@@ -97,6 +168,9 @@ public:
 				snekBody[snekLen - 1] = { posX,posY };
 			}
 
+
+			// VVVVV --- Eating "food" and spawning a new one upon it being eaten --- VVVVV
+
 			if (dist(posX, posY, posFoodX, posFoodY))
 			{
 				int tempX, tempY;
@@ -109,36 +183,12 @@ public:
 				snekBody.push_back(temp);
 			}
 
-			if (GetKey(olc::Key::W).bHeld && !(dirY == pxSize) && !movement)
-			{
-				dirY = pxSize * -1;
-				dirX = 0;
-				movement = true;
-			}
 
-			if (GetKey(olc::Key::A).bHeld && !(dirX == pxSize) && !movement)
-			{
-				dirX = pxSize * -1;
-				dirY = 0;
-				movement = true;
-			}
+			/*
+			
+			OLD KEYPRESS DETECTION
 
-			if (GetKey(olc::Key::S).bHeld && !(dirY == (pxSize * -1)) && !movement)
-			{
-				dirY = pxSize;
-				dirX = 0;
-				movement = true;
-			}
-
-			if (GetKey(olc::Key::D).bHeld && !(dirX == (pxSize * -1)) && !movement)
-			{
-				dirX = pxSize;
-				dirY = 0;
-				movement = true;
-			}
-
-
-			/*if (_kbhit())
+			if (_kbhit())
 				keyPress = _getch();
 			switch (keyPress)
 			{
@@ -181,19 +231,14 @@ public:
 			}
 			*/
 
+
 			snekPositionUpdater(dirX, dirY);
 
-			if (posX >= ScreenWidth())
-				posX = 0;
-			if (posX < 0)
-				posX = ScreenWidth();
-			if (posY >= ScreenHeight())
-				posY = 0;
-			if (posY < 0)
-				posY = ScreenHeight();
+			edgeHitCheck();
 
 			Clear(olc::BLACK);
 
+			// VVVVV --- Drawing snek body --- VVVVV
 
 			for (int i = 0; i < snekBody.size(); i++)
 			{
@@ -202,22 +247,21 @@ public:
 						return true;
 					}
 				}*/
+
 				FillRect(snekBody[i][0], snekBody[i][1], pxSize, pxSize, olc::DARK_GREEN);
 			}
 
+			// VVVVV --- Drawing snek head and food --- VVVVV
 
 			FillRect(posX, posY, pxSize, pxSize, olc::GREEN);
 			FillRect(posFoodX, posFoodY, pxSize, pxSize, olc::RED);
 			//Sleep(speed);
 
+
 			return true;
 		}
 	else
 	{
-		if (GetKey(olc::Key::SPACE).bHeld)
-		{
-			paused = 0;
-		}
 		return true;
 	}
 	}
@@ -225,9 +269,9 @@ public:
 
 int main()
 {
-	cout << "Warning: Values too high may break the game\nInsert difficulty of the game: (The higher the harder)\n";
+	cout << "Warning: Values too high may break the game\nInsert difficulty of the game: (The higher the harder, suggested is 8)\n";
 	cin >> pxSize;
-	cout << "\nWhat about the speed of the game? (The higher the harder) \n";
+	cout << "\nWhat about the speed of the game? (The higher the harder, suggested is 75) \n";
 	cin >> speed;
 	speed = 500 / speed;
 	srand(time(NULL));
